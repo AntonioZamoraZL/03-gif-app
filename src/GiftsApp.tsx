@@ -1,18 +1,28 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { mockGifs } from './mock-data/gifs-mocks'
 import { CustomHeader } from './shared/components/CustomHeader'
 import { SearchBar } from './shared/components/SearchBar'
 import { PreviousSearches } from './gifs/components/PreviousSearches'
 import { GifList } from './gifs/components/GifList'
+import { getGifsByQuery } from './gifs/actions/get-gifs-by-query.actions'
 
 export const GiftsApp = () => {
-    const [previousTerms, setPreviousTerms] = useState(['The Last Of US'])
-    const handleTermClicked = (term:string) => {
-        console.log({term})
+    const [previousTerms, setPreviousTerms] = useState(['']);
+    const [gifsGiphy, setGifGiphy] = useState(mockGifs);
+    const handleTermClicked = async (term:string) => {
+        setGifGiphy(await getGifsByQuery(term));
 
     }
-    const handleSearch = ( query: string ) => {
-        console.log({query})
+    const handleSearch = async ( query: string ) => {
+        query = query.trim().toLowerCase();
+
+        if (query.length == 0) return;
+
+        if (previousTerms.includes(query)) return;
+
+        setPreviousTerms([query, ...previousTerms.splice(0,6)])
+
+        setGifGiphy( await getGifsByQuery(query) );
     }
   return (
     <>
@@ -25,7 +35,7 @@ export const GiftsApp = () => {
 
         <PreviousSearches previousSearch={previousTerms} onLabelClick={handleTermClicked}></PreviousSearches>
 
-        <GifList gifs={mockGifs}/>
+        <GifList gifs={gifsGiphy}/>
     </>
   )
 }
